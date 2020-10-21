@@ -51,9 +51,9 @@ public class TutorialController {
 
     private Sort.Direction getSortDirection(String direction) {
         if (direction.equals("asc")) {
-          return Sort.Direction.ASC;
+            return Sort.Direction.ASC;
         } else if (direction.equals("desc")) {
-          return Sort.Direction.DESC;
+            return Sort.Direction.DESC;
         }
 
         return Sort.Direction.ASC;
@@ -85,10 +85,11 @@ public class TutorialController {
             Pageable pagingSort = PageRequest.of(page, size, Sort.by(orders));
 
             Page<Tutorial> pageTuts;
-            if (title == null)
+            if (title == null) {
                 pageTuts = tutorialRepository.findAll(pagingSort);
-            else
+            } else {
                 pageTuts = tutorialRepository.findByTitleContaining(title, pagingSort);
+            }
 
             tutorials = pageTuts.getContent();
 
@@ -130,14 +131,17 @@ public class TutorialController {
                 fileService.save(file);
 
                 message = "Uploaded the file successfully: " + file.getOriginalFilename();
+
                 return ResponseEntity.status(HttpStatus.OK).body(new MessageResponse(message));
             } catch (Exception e) {
                 message = "Could not upload the file: " + file.getOriginalFilename() + "!";
+
                 return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(new MessageResponse(message));
             }
         }
 
         message = "Please upload an excel file!";
+
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new MessageResponse(message));
     }
 
@@ -156,8 +160,9 @@ public class TutorialController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Tutorial> createTutorial(@RequestBody Tutorial tutorial) {
         try {
-        Tutorial _tutorial = tutorialRepository
+            Tutorial _tutorial = tutorialRepository
             .save(new Tutorial(tutorial.getTitle(), tutorial.getDescription(), false));
+
             return new ResponseEntity<>(_tutorial, HttpStatus.CREATED);
         } catch (Exception e) {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);

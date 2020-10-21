@@ -34,20 +34,20 @@ import org.springframework.web.multipart.MultipartFile;
 import com.fvhmi.springjwt.models.Tutorial;
 import com.fvhmi.springjwt.repository.TutorialRepository;
 
-import com.fvhmi.springjwt.service.ExcelService;
-import com.fvhmi.springjwt.helper.ExcelHelper;
+import com.fvhmi.springjwt.service.TutorialExcelService;
+import com.fvhmi.springjwt.helper.TutorialExcelHelper;
 import com.fvhmi.springjwt.payload.response.MessageResponse;
 
 @CrossOrigin(origins = "*")
 @RestController
-@RequestMapping("/api/v1")
+@RequestMapping("/api/v1/tutorials")
 public class TutorialController {
 
     @Autowired
     TutorialRepository tutorialRepository;
 
     @Autowired
-    ExcelService fileService;
+    TutorialExcelService fileService;
 
     private Sort.Direction getSortDirection(String direction) {
         if (direction.equals("asc")) {
@@ -59,7 +59,7 @@ public class TutorialController {
         return Sort.Direction.ASC;
     }
 
-    @GetMapping("/tutorials")
+    @GetMapping("")
     public ResponseEntity<Map<String, Object>> getAllTutorialsPage(
         @RequestParam(required = false) String title,
         @RequestParam(defaultValue = "0") int page,
@@ -108,7 +108,8 @@ public class TutorialController {
         }
     }
 
-    @GetMapping("/tutorials/download/excel")
+    @GetMapping("/download/excel")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Resource> getFile() {
         String filename = "tutorials.xlsx";
         InputStreamResource file = new InputStreamResource(fileService.load());
@@ -119,11 +120,12 @@ public class TutorialController {
             .body(file);
     }
 
-    @PostMapping("/tutorials/upload/excel")
+    @PostMapping("/upload/excel")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<MessageResponse> uploadFile(@RequestParam("file") MultipartFile file) {
         String message = "";
 
-        if (ExcelHelper.hasExcelFormat(file)) {
+        if (TutorialExcelHelper.hasExcelFormat(file)) {
             try {
                 fileService.save(file);
 
@@ -139,7 +141,7 @@ public class TutorialController {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new MessageResponse(message));
     }
 
-    @GetMapping("/tutorials/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<Tutorial> getTutorialById(@PathVariable("id") long id) {
         Optional<Tutorial> tutorialData = tutorialRepository.findById(id);
 
@@ -150,7 +152,7 @@ public class TutorialController {
         }
     }
 
-    @PostMapping("/tutorials")
+    @PostMapping("")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Tutorial> createTutorial(@RequestBody Tutorial tutorial) {
         try {
@@ -162,7 +164,7 @@ public class TutorialController {
         }
     }
 
-    @PutMapping("/tutorials/{id}")
+    @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Tutorial> updateTutorial(@PathVariable("id") long id, @RequestBody Tutorial tutorial) {
         Optional<Tutorial> tutorialData = tutorialRepository.findById(id);
@@ -179,7 +181,7 @@ public class TutorialController {
         }
     }
 
-    @DeleteMapping("/tutorials/{id}")
+    @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<HttpStatus> deleteTutorial(@PathVariable("id") long id) {
         try {
@@ -191,7 +193,7 @@ public class TutorialController {
         }
     }
 
-    @DeleteMapping("/tutorials")
+    @DeleteMapping("")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<HttpStatus> deleteAllTutorials() {
         try {
@@ -203,7 +205,7 @@ public class TutorialController {
         }
     }
 
-    @GetMapping("/tutorials/published")
+    @GetMapping("/published")
     public ResponseEntity<Map<String, Object>> findByPublished(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "3") int size

@@ -17,7 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.fvhmi.springjwt.models.Tutorial;
 
-public class ExcelHelper {
+public class TutorialExcelHelper {
     public static String TYPE = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
     static String[] HEADERs = { "Id", "Title", "Description", "Published" };
     static String SHEET = "Tutorials";

@@ -29,11 +29,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.fvhmi.springjwt.models.Tutorial;
 import com.fvhmi.springjwt.repository.TutorialRepository;
 
 import com.fvhmi.springjwt.service.ExcelService;
+import com.fvhmi.springjwt.helper.ExcelHelper;
+import com.fvhmi.springjwt.payload.response.MessageResponse;
 
 @CrossOrigin(origins = "*")
 @RestController
@@ -114,6 +117,26 @@ public class TutorialController {
             .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename)
             .contentType(MediaType.parseMediaType("application/vnd.ms-excel"))
             .body(file);
+    }
+
+    @PostMapping("/tutorials/upload/excel")
+    public ResponseEntity<MessageResponse> uploadFile(@RequestParam("file") MultipartFile file) {
+        String message = "";
+
+        if (ExcelHelper.hasExcelFormat(file)) {
+            try {
+                fileService.save(file);
+
+                message = "Uploaded the file successfully: " + file.getOriginalFilename();
+                return ResponseEntity.status(HttpStatus.OK).body(new MessageResponse(message));
+            } catch (Exception e) {
+                message = "Could not upload the file: " + file.getOriginalFilename() + "!";
+                return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(new MessageResponse(message));
+            }
+        }
+
+        message = "Please upload an excel file!";
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new MessageResponse(message));
     }
 
     @GetMapping("/tutorials/{id}")
